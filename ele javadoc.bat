@@ -1,0 +1,1 @@
+javadoc -d C:\Languages\Java\Development\EleMapper\doc -sourcepath C:\Languages\Java\Development\EleMapper\src org.elephant.mapper
