@@ -2656,7 +2656,7 @@ public class EleFrame extends JFrame {
     void map_mouseClicked(MouseEvent e) {
         Point p = new Point(e.getX(), e.getY());
         int retValue;
-        EleExportableCollection<Exportable> tmp;
+        EleMappableCollection<EleMappable> tmp;
 
         if (_pasting) {
             updateCurrentRoom(p, true);
