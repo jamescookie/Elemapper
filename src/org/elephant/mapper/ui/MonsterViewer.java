@@ -1,4 +1,4 @@
-package org.elephant.mapper;
+package org.elephant.mapper.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

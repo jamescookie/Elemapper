@@ -1,4 +1,4 @@
-package org.elephant.mapper;
+package org.elephant.mapper.ui;
 
 import java.awt.AWTEvent;
 import java.awt.BasicStroke;
@@ -76,6 +76,19 @@ import com.borland.jbcl.layout.XYConstraints;
 import com.borland.jbcl.layout.XYLayout;
 import org.elephant.mapper.helper.RoomHelper;
 import org.elephant.mapper.helper.ExitHelper;
+import org.elephant.mapper.EleMap;
+import org.elephant.mapper.EleMappableCollection;
+import org.elephant.mapper.EleConstants;
+import org.elephant.mapper.EleUtils;
+import org.elephant.mapper.Room;
+import org.elephant.mapper.FileChooser;
+import org.elephant.mapper.DocumentHandler;
+import org.elephant.mapper.EleMapExportException;
+import org.elephant.mapper.EleMappable;
+import org.elephant.mapper.Exit;
+import org.elephant.mapper.EleHashtable;
+import org.elephant.mapper.LoadedObject;
+import org.elephant.mapper.Function;
 
 /**
  * The graphical part of the Mapper, this class also contains a lot
@@ -1434,7 +1447,7 @@ public class EleFrame extends JFrame {
         jScrollPane2.setPreferredSize(new Dimension(150, 0));
         jScrollPane3.setBorder(BorderFactory.createLoweredBevelBorder());
         jLabel13.setText("This room is...");
-        jLabel14.setText("Terrains (max "+Room.MAX_TERRAINS+")");
+        jLabel14.setText("Terrains (max "+ Room.MAX_TERRAINS+")");
         jLabel15.setText("Light Level");
         jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane4.setBorder(BorderFactory.createLoweredBevelBorder());

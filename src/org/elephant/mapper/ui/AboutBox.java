@@ -1,4 +1,4 @@
-package org.elephant.mapper;
+package org.elephant.mapper.ui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.borland.jbcl.layout.VerticalFlowLayout;
+import org.elephant.mapper.EleConstants;
+import org.elephant.mapper.EleUtils;
 
 /**
  * A dialog box to explain EleMapper.

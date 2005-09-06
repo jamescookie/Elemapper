@@ -1,4 +1,4 @@
-package org.elephant.mapper;
+package org.elephant.mapper.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -10,6 +10,8 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+
+import org.elephant.mapper.EleConstants;
 
 public class Options extends JDialog {
     private JPanel pnlOptions = new JPanel();

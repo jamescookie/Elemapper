@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.UIManager;
 
+import org.elephant.mapper.ui.EleFrame;
+
 /**
  * EleMapper is a tool used by wizards of <a href="http://www.elephant.org">Elephant Mud</a> to
  * help map an area. The LPC code can then be generated automatically, saving time and effort.
