@@ -74,6 +74,8 @@ import javax.swing.event.MenuListener;
 import com.borland.jbcl.layout.VerticalFlowLayout;
 import com.borland.jbcl.layout.XYConstraints;
 import com.borland.jbcl.layout.XYLayout;
+import org.elephant.mapper.helper.RoomHelper;
+import org.elephant.mapper.helper.ExitHelper;
 
 /**
  * The graphical part of the Mapper, this class also contains a lot
@@ -109,9 +111,8 @@ public class EleFrame extends JFrame {
     private JButton _currentButton;
     private EleMap _eleMap;
     private EleMappableCollection<EleMappable> _stuffToMove;
-    private Room _currentRoom;
-    private Room _copiedRoom;
-    private Exit _currentExit;
+    private RoomHelper roomHelper = new RoomHelper();
+    private ExitHelper exitHelper = new ExitHelper();
     private Graphics _mapGraphics;
     private Point _exitStartPoint;
     private boolean _makingExit;
@@ -2089,20 +2090,20 @@ public class EleFrame extends JFrame {
     }
 
     void menuEditCopy_actionPerformed(ActionEvent e) {
-        if (_currentRoom == null) {
+        if (!roomHelper.hasRoom()) {
             JOptionPane.showMessageDialog(this,
                 "There must be a room selected in order to do a copy.",
                 "Copying",
                 JOptionPane.ERROR_MESSAGE);
         } else {
-            saveCurrentRoomSettings();
-            _copiedRoom = _currentRoom.clone(_eleMap.getRoomSize(), _eleMap.getRoomNumber());
+            saveCurrentRoomSettings(roomHelper.getRoom());
+            roomHelper.createCopyRoom(_eleMap.getRoomSize(), _eleMap.getRoomNumber());
             _eleMap.incrementRoomNumber();
         }
     }
 
     void menuEditPaste_actionPerformed(ActionEvent e) {
-        if (_copiedRoom == null) {
+        if (!roomHelper.hasCopiedRoom()) {
             JOptionPane.showMessageDialog(this,
                 "Copy a room first.",
                 "Pasting",
@@ -2136,7 +2137,7 @@ public class EleFrame extends JFrame {
     }
 
     void menuTools_menuSelected(MenuEvent e) {
-        if (_currentRoom == null) {
+        if (!roomHelper.hasRoom()) {
             menuToolLevelExitMenu.setEnabled(false);
         } else {
             menuToolLevelExitMenu.setEnabled(true);
@@ -2271,30 +2272,13 @@ public class EleFrame extends JFrame {
     // Item buttons
     void btnItemAdd_actionPerformed(ActionEvent e) {
         StringTokenizer st = new StringTokenizer(txtItemNames.getText(), ",");
-        ArrayList<String> v = new ArrayList<String>();
-        int i;
-        boolean found = false;
-        Item item;
+        ArrayList<String> itemNames = new ArrayList<String>();
 
         while (st.hasMoreTokens()) {
-            v.add(st.nextToken().trim());
+            itemNames.add(st.nextToken().trim());
         }
 
-        if (v.size() > 0) {
-            for (i = 0; i < _currentRoom.getItems().size(); i++) {
-                if (_currentRoom.getItem(i).containsNames(v)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            item = new Item(v, txtItemDescription.getText().trim());
-            if (found) {
-                _currentRoom.getItems().set(i, item);
-            } else {
-                _currentRoom.getItems().add(item);
-            }
-        }
+        roomHelper.addItem(itemNames, txtItemDescription.getText().trim());
 
         updateItemList();
         txtItemDescription.setText("");
@@ -2304,9 +2288,7 @@ public class EleFrame extends JFrame {
     void btnItemDelete_actionPerformed(ActionEvent e) {
         int index = lstItems.getSelectedIndex();
 
-        if (index > -1) {
-            _currentRoom.getItems().remove(index);
-        }
+        roomHelper.removeItem(index);
 
         updateItemList();
         txtItemDescription.setText("");
@@ -2315,59 +2297,27 @@ public class EleFrame extends JFrame {
 
     // Sense buttons
     void btnSenseAdd_actionPerformed(ActionEvent e) {
-        addSense(currentSense());
+        addSense(findSense());
     }
 
     void btnSenseDelete_actionPerformed(ActionEvent e) {
-        EleHashtable senses = currentSense();
         int index = lstSenses.getSelectedIndex();
 
-        if (index > -1) {
-            if (senses != null) {
-                senses.remove(index);
-            }
-        }
+        roomHelper.removeSense(index, findSense());
 
-        updateSenseList(senses);
+        updateSenseList(findSense());
         txtSenseName.setText("");
         txtSenseDescription.setText("");
     }
 
     // Object buttons
     void btnObjectAdd_actionPerformed(ActionEvent e) {
-        int loadType = 0;
-        LoadedObject obj;
-        boolean found = false;
-        String fileName = txtObjectFileName.getText();
-        int i;
-        EleExportableCollection<Exportable> loadedObjects;
-
-        if (fileName != null && fileName.length() > 0) {
-            if (optObjectLoadPresent.isSelected()) {
-                loadType = LoadedObject.LOAD_TYPE_PRESENT;
-            } else if (optObjectLoadTrack.isSelected()) {
-                loadType = LoadedObject.LOAD_TYPE_TRACK;
-            } else if (optObjectLoadUnique.isSelected()) {
-                loadType = LoadedObject.LOAD_TYPE_UNIQUE;
-            }
-
-            obj = new LoadedObject((optObjectTypeMon.isSelected()?LoadedObject.OBJECT_TYPE_MON:LoadedObject.OBJECT_TYPE_OBJ),
-                                   loadType, fileName, txtObjectMessage.getText());
-
-            loadedObjects = _currentRoom.getLoadedObjects();
-            for (i = 0; i < loadedObjects.size(); i++) {
-                if (((LoadedObject) loadedObjects.get(i)).getFileName().equals(fileName)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                loadedObjects.set(i, obj);
-            } else {
-                loadedObjects.add(obj);
-            }
-        }
+        roomHelper.addObject(txtObjectFileName.getText(),
+                optObjectLoadPresent.isSelected(),
+                optObjectLoadTrack.isSelected(),
+                optObjectLoadUnique.isSelected(),
+                optObjectTypeMon.isSelected(),
+                txtObjectMessage.getText());
 
         updateObjectLists();
         txtObjectFileName.setText("");
@@ -2375,7 +2325,7 @@ public class EleFrame extends JFrame {
     }
 
     void btnObjectDelete_actionPerformed(ActionEvent e) {
-        _currentRoom.getLoadedObjects().remove((String) lstObjects.getSelectedValue());
+        roomHelper.removeObject((String) lstObjects.getSelectedValue());
 
         updateObjectLists();
         txtObjectFileName.setText("");
@@ -2393,33 +2343,10 @@ public class EleFrame extends JFrame {
 
     // Function buttons
     void btnFunctionAdd_actionPerformed(ActionEvent e) {
-        Function function;
-        boolean found = false;
-        String functionName = txtFunctionName.getText();
-        int i;
-        EleExportableCollection<Exportable> functions;
-
-        if (functionName != null && functionName.length() > 0) {
-
-            function = new Function(txtFunctionReturnType.getText(),
-                                    functionName,
-                                    txtFunctionArguments.getText(),
-                                    txtFunctionBody.getText());
-
-            functions = _currentRoom.getFunctions();
-            for (i = 0; i < functions.size(); i++) {
-                if (((Function) functions.get(i)).getName().equals(functionName)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                functions.set(i, function);
-            } else {
-                functions.add(function);
-            }
-        }
+        roomHelper.addFunction(txtFunctionName.getText(),
+                txtFunctionReturnType.getText(),
+                txtFunctionArguments.getText(),
+                txtFunctionBody.getText());
 
         updateFunctionLists();
         txtFunctionReturnType.setText("");
@@ -2429,7 +2356,7 @@ public class EleFrame extends JFrame {
     }
 
     void btnFunctionDelete_actionPerformed(ActionEvent e) {
-        _currentRoom.getFunctions().remove((String) lstFunctions.getSelectedValue());
+        roomHelper.removeFunction((String) lstFunctions.getSelectedValue());
 
         updateFunctionLists();
         txtFunctionReturnType.setText("");
@@ -2447,10 +2374,8 @@ public class EleFrame extends JFrame {
         );
         if (c != null) {
             btnRoomColour.setBackground(c);
-            if (_currentRoom != null) {
-                _currentRoom.setColour(c);
-                pnlMap.repaint();
-            }
+            roomHelper.setColour(c);
+            pnlMap.repaint();
         }
     }
 
@@ -2534,7 +2459,7 @@ public class EleFrame extends JFrame {
             updateCurrentExit(p, false);
             updateCurrentRoom(p, true);
 
-            if (_currentRoom != null) {
+            if (roomHelper.hasRoom()) {
                 _exitStartPoint = p;
                 _makingExit = true;
             }
@@ -2543,10 +2468,9 @@ public class EleFrame extends JFrame {
             updateCurrentExit(p, false);
             updateCurrentRoom(p, true);
 
-            if (_currentRoom != null) {
+            if (roomHelper.hasRoom()) {
                 _movingStuff = true;
-//                _moveStartPoint = new Point((int) _currentRoom.getX(), (int) _currentRoom.getY());
-                _stuffToMove = Room.getAllLinked(new EleMappableCollection<EleMappable>(EleConstants.XML_BOTH), _currentRoom);
+                _stuffToMove = Room.getAllLinked(new EleMappableCollection<EleMappable>(EleConstants.XML_BOTH), roomHelper.getRoom());
             }
             break;
         }
@@ -2569,8 +2493,8 @@ public class EleFrame extends JFrame {
             if (_makingExit) {
                 g.drawLine(_exitStartPoint.x, _exitStartPoint.y, e.getX(), e.getY());
             } else if (_movingStuff) {
-                x = e.getX() - (_eleMap.getRoomSize() / 2) - (int) _currentRoom.getX();
-                y = e.getY() - (_eleMap.getRoomSize() / 2) - (int) _currentRoom.getY();
+                x = e.getX() - (_eleMap.getRoomSize() / 2) - (int) roomHelper.getRoom().getX();
+                y = e.getY() - (_eleMap.getRoomSize() / 2) - (int) roomHelper.getRoom().getY();
 
                 _stuffToMove.paintOutline(g, _eleMap.getLevel(), x, y);
             }
@@ -2583,7 +2507,6 @@ public class EleFrame extends JFrame {
         EleMappable tmp;
         boolean move = true;
         Room r;
-        Room roomExitLinkedFrom;
         int direction;
 
         // Make sure the cursor is still in the bounds of the map.
@@ -2592,7 +2515,7 @@ public class EleFrame extends JFrame {
                 if (!_pasting) {
                     updateCurrentExit(p, false);
                     updateCurrentRoom(p, true);
-                    if (_currentRoom != null) {
+                    if (roomHelper.hasRoom()) {
                         _makingExit = false;
                         _movingStuff = false;
                         addLevelExitItems(popupMenu);
@@ -2602,20 +2525,19 @@ public class EleFrame extends JFrame {
             } else {
                 if (_makingExit) {
                     _makingExit = false;
-                    roomExitLinkedFrom = _currentRoom;
+                    Room roomExitLinkedFrom = roomHelper.getRoom();
                     updateCurrentRoom(p, true);
+                    Room roomExitLinkedTo = roomHelper.getRoom();
 
-                    if (_currentRoom != null) {
-                        direction = roomExitLinkedFrom.adjacentRoom(_currentRoom);
+                    if (roomExitLinkedTo != null) {
+                        direction = roomExitLinkedFrom.adjacentRoom(roomExitLinkedTo);
                         if ((direction != 0) && (!roomExitLinkedFrom.containsExit(direction))) {
                             clearRoomSettings();
-                            _currentRoom.deSelect(_mapGraphics, _eleMap.getLevel(), _eleMap.getShowUpper(), _eleMap.getShowLower());
-                            _currentExit = new Exit(roomExitLinkedFrom, _currentRoom, _eleMap.getExitNumber(), _eleMap.getLevel(), _mapGraphics);
-                            _eleMap.getExits().add(_currentExit);
+                            roomHelper.deSelect(_mapGraphics, _eleMap.getLevel(), _eleMap.getShowUpper(), _eleMap.getShowLower());
+                            exitHelper.setExit(new Exit(roomExitLinkedFrom, roomExitLinkedTo, _eleMap.getExitNumber(), _eleMap.getLevel(), _mapGraphics));
+                            _eleMap.getExits().add(exitHelper.getExit());
                             _eleMap.incrementExitNumber();
-                            updateExitSettings();
-
-                            _currentRoom = null;
+                            updateExitSettings(exitHelper.getExit());
                         }
                     }
 
@@ -2629,8 +2551,8 @@ public class EleFrame extends JFrame {
                         tmp = (EleMappable) thingToMove;
                         if (tmp instanceof Room) {
                             p2 = ((Room) tmp).getLocation();
-                            p2.translate((int) (p.getX() - _currentRoom.getX()),
-                                    (int) (p.getY() - _currentRoom.getY()));
+                            p2.translate((int) (p.getX() - roomHelper.getRoom().getX()),
+                                    (int) (p.getY() - roomHelper.getRoom().getY()));
                             r = (Room) _eleMap.getRooms().exists(p2, _eleMap.getLevel());
                             if (r != null && !_stuffToMove.contains(r)) {
                                 move = false;
@@ -2640,8 +2562,8 @@ public class EleFrame extends JFrame {
 
                     // If everything is ok, then do the move.
                     if (move) {
-                        _stuffToMove.shift((int) (p.getY() - _currentRoom.getY()),
-                                            (int) (p.getX() - _currentRoom.getX()));
+                        _stuffToMove.shift((int) (p.getY() - roomHelper.getRoom().getY()),
+                                            (int) (p.getX() - roomHelper.getRoom().getX()));
                     }
 
                     // ...and repaint.
@@ -2661,39 +2583,41 @@ public class EleFrame extends JFrame {
         if (_pasting) {
             updateCurrentRoom(p, true);
             updateCurrentExit(p, false);
-            if (_currentRoom != null) {
+            if (roomHelper.hasRoom()) {
                 retValue = JOptionPane.showConfirmDialog(this,
                                "There is already a room there. Click ok to update that room with the details from the copied room.",
                                "Warning",
                                JOptionPane.OK_CANCEL_OPTION);
                 if (retValue == JOptionPane.OK_OPTION) {
-                    _currentRoom.update(_copiedRoom);
-                    updateRoomSettings();
+                    roomHelper.updateCurrentRoomWithCopiedRoom();
+                    updateRoomSettings(roomHelper.getRoom());
                 }
             } else {
+                roomHelper.makeCopiedRoomTheCurrentRoom();
+                Room room = roomHelper.getRoom();
                 p = Room.alterForRoom(p, _eleMap.getRoomSize());
-                _copiedRoom.setLevel(_eleMap.getLevel());
-                _copiedRoom.shift((int) (p.getY() - _copiedRoom.getY()),
-                                   (int) (p.getX() - _copiedRoom.getX()));
-                _eleMap.getRooms().add(_copiedRoom);
-                _copiedRoom.select(_mapGraphics);
-                _currentRoom = _copiedRoom;
-                updateRoomSettings();
+                room.setLevel(_eleMap.getLevel());
+                room.shift((int) (p.getY() - room.getY()),
+                                   (int) (p.getX() - room.getX()));
+                _eleMap.getRooms().add(room);
+                room.select(_mapGraphics);
+                updateRoomSettings(room);
             }
         } else {
             switch(_currentTool) {
                 case TOOL_SELECT:
                     updateCurrentRoom(p, true);
-                    updateCurrentExit(p, (_currentRoom == null));
+                    updateCurrentExit(p, !roomHelper.hasRoom());
                     break;
                 case TOOL_DELETE:
                     updateCurrentRoom(p, true);
-                    updateCurrentExit(p, (_currentRoom == null));
-                    if (_currentRoom != null) {
-                        if (_currentRoom.getNumberOfExits() == 0) {
+                    updateCurrentExit(p, !roomHelper.hasRoom());
+                    if (roomHelper.hasRoom()) {
+                        Room room = roomHelper.getRoom();
+                        if (room.getNumberOfExits() == 0) {
                             clearRoomSettings();
-                            _eleMap.getRooms().remove(_currentRoom);
-                            _currentRoom = null;
+                            _eleMap.getRooms().remove(room);
+                            roomHelper.clearRoom();
                         } else {
                             retValue = JOptionPane.showConfirmDialog(this,
                                            "This room has exits. Deleting this room will delete everything linked to it.",
@@ -2701,17 +2625,16 @@ public class EleFrame extends JFrame {
                                            JOptionPane.OK_CANCEL_OPTION);
                             if (retValue == JOptionPane.OK_OPTION) {
                                 clearRoomSettings();
-                                tmp = Room.getAllLinked(new EleMappableCollection<EleMappable>(EleConstants.XML_BOTH), _currentRoom);
+                                tmp = Room.getAllLinked(new EleMappableCollection<EleMappable>(EleConstants.XML_BOTH), room);
                                 _eleMap.getRooms().removeAll(tmp);
                                 _eleMap.getExits().removeAll(tmp);
-                                _currentRoom = null;
+                                roomHelper.clearRoom();
                             }
                         }
-                    } else if (_currentExit != null) {
+                    } else if (exitHelper.hasExit()) {
                         clearExitSettings();
-                        _eleMap.getExits().remove(_currentExit);
-                        _currentExit.dispose();
-                        _currentExit = null;
+                        _eleMap.getExits().remove(exitHelper.getExit());
+                        exitHelper.clearExit();
                     }
                     button_actionPerformed(btnSelect, TOOL_SELECT);
                     break;
@@ -2719,11 +2642,11 @@ public class EleFrame extends JFrame {
                     p = Room.alterForRoom(p, _eleMap.getRoomSize());
                     updateCurrentExit(p, false);
                     updateCurrentRoom(p, true);
-                    if (_currentRoom == null) {
-                        _currentRoom = new Room(p, _eleMap.getRoomSize(), _eleMap.getRoomNumber(), _eleMap.getLevel(), _mapGraphics);
-                        _eleMap.getRooms().add(_currentRoom);
+                    if (!roomHelper.hasRoom()) {
+                        roomHelper.setRoom(new Room(p, _eleMap.getRoomSize(), _eleMap.getRoomNumber(), _eleMap.getLevel(), _mapGraphics));
+                        _eleMap.getRooms().add(roomHelper.getRoom());
                         _eleMap.incrementRoomNumber();
-                        updateRoomSettings();
+                        updateRoomSettings(roomHelper.getRoom());
                     }
                     break;
             }
@@ -2892,10 +2815,10 @@ public class EleFrame extends JFrame {
 
     void optSmells_itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.DESELECTED) {
-            saveSenses(_currentRoom.getSmells());
+            saveSenses(roomHelper.getRoom().getSmells());
         } else if (e.getStateChange() == ItemEvent.SELECTED) {
             if (_senseSelected != optSmells) {
-                loadSenses(_currentRoom.getSmells());
+                loadSenses(roomHelper.getRoom().getSmells());
                 _senseSelected = optSmells;
             }
         }
@@ -2903,10 +2826,10 @@ public class EleFrame extends JFrame {
 
     void optSounds_itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.DESELECTED) {
-            saveSenses(_currentRoom.getSounds());
+            saveSenses(roomHelper.getRoom().getSounds());
         } else if (e.getStateChange() == ItemEvent.SELECTED) {
             if (_senseSelected != optSounds) {
-                loadSenses(_currentRoom.getSounds());
+                loadSenses(roomHelper.getRoom().getSounds());
                 _senseSelected = optSounds;
             }
         }
@@ -2919,9 +2842,9 @@ public class EleFrame extends JFrame {
     void lstItems_valueChanged(ListSelectionEvent e) {
         int index = lstItems.getSelectedIndex();
         if (index >= 0) {
-            if (_currentRoom != null) {
-                txtItemDescription.setText(_currentRoom.getItem(index).getDescription());
-                txtItemNames.setText(_currentRoom.getItem(index).getNames());
+            if (roomHelper.hasRoom()) {
+                txtItemDescription.setText(roomHelper.getRoom().getItem(index).getDescription());
+                txtItemNames.setText(roomHelper.getRoom().getItem(index).getNames());
             }
         }
     }
@@ -2930,7 +2853,7 @@ public class EleFrame extends JFrame {
         EleHashtable senses;
         int index = lstSenses.getSelectedIndex();
         if (index >= 0) {
-            senses = currentSense();
+            senses = findSense();
             if (senses != null) {
                 txtSenseName.setText(senses.getKey(index));
                 txtSenseDescription.setText(senses.getValue(index));
@@ -3043,8 +2966,8 @@ public class EleFrame extends JFrame {
         button_actionPerformed(btnSelect, TOOL_SELECT);
         _currentFile = currentFile;
         _stuffToMove = null;
-        _currentRoom = null;
-        _currentExit = null;
+        roomHelper = new RoomHelper();
+        exitHelper = new ExitHelper();
         _exitStartPoint = null;
         _makingExit = false;
         _movingStuff = false;
@@ -3063,30 +2986,31 @@ public class EleFrame extends JFrame {
     }
 
     private void paintMiniExitMap(Graphics miniMap) {
-        if (_currentExit != null) {
+        if (exitHelper.hasExit()) {
+            Exit currentExit = exitHelper.getExit();
             int x = pnlExitMiniMap.getInsets().left;
             int y = pnlExitMiniMap.getInsets().top;
             int height = pnlExitMiniMap.getHeight();
             int width = pnlExitMiniMap.getWidth();
-            Point p1 = EleUtils.getPointForDirection(_currentExit.getDirection(_currentExit.getRoom1()), x, y, height, width);
-            Point p2 = EleUtils.getPointForDirection(_currentExit.getDirection(_currentExit.getRoom2()), x, y, height, width);
+            Point p1 = EleUtils.getPointForDirection(currentExit.getDirection(currentExit.getRoom1()), x, y, height, width);
+            Point p2 = EleUtils.getPointForDirection(currentExit.getDirection(currentExit.getRoom2()), x, y, height, width);
             miniMap.setColor(EleConstants.EXIT_COLOUR);
             miniMap.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
     }
 
     private void addLevelExitItems(JComponent menu) {
-        if (_currentRoom != null) {
+        if (roomHelper.hasRoom()) {
             menu.removeAll();
 
-            if (!_currentRoom.containsExit(EleConstants.DIRECTION_UP)) {
+            if (!roomHelper.getRoom().containsExit(EleConstants.DIRECTION_UP)) {
                 menu.add(menuLevelAddUp);
             } else {
                 menu.add(menuLevelSelectUp);
                 menu.add(menuLevelDeleteUp);
             }
 
-            if (!_currentRoom.containsExit(EleConstants.DIRECTION_DOWN)) {
+            if (!roomHelper.getRoom().containsExit(EleConstants.DIRECTION_DOWN)) {
                 menu.add(menuLevelAddDown);
             } else {
                 menu.add(menuLevelSelectDown);
@@ -3126,65 +3050,64 @@ public class EleFrame extends JFrame {
     }
 
     private void updateCurrentRoom(Point p, boolean shouldFind) {
-        Room r = null;
+        Room newRoom = null;
 
         if (shouldFind) {
-            r = (Room) _eleMap.getRooms().exists(p, _eleMap.getLevel());
+            newRoom = (Room) _eleMap.getRooms().exists(p, _eleMap.getLevel());
         }
 
-        if (_currentRoom != null) {
-            if ((r != null) && (_currentRoom.equals(r))) {
+        if (roomHelper.hasRoom()) {
+            Room currentRoom = roomHelper.getRoom();
+            if ((newRoom != null) && (currentRoom.equals(newRoom))) {
                 return;
             }
-            // todo: why did I have savecurrent above the last bit?
-            saveCurrentRoomSettings();
-//            clearRoomSettings();
-            _currentRoom.deSelect(_mapGraphics, _eleMap.getLevel(),
-                                   _eleMap.getShowUpper(),
-                                   _eleMap.getShowLower());
+            saveCurrentRoomSettings(currentRoom);
+            roomHelper.deSelect(_mapGraphics, _eleMap.getLevel(), _eleMap.getShowUpper(), _eleMap.getShowLower());
         }
 
-        selectRoom(r);
+        selectRoom(newRoom);
     }
 
     private void selectRoom(Room r) {
-        _currentRoom = r;
-        if (_currentRoom != null) {
-            _currentRoom.select(_mapGraphics);
-            updateRoomSettings();
+        roomHelper.setRoom(r);
+        if (roomHelper.hasRoom()) { // if the room was not null
+            r.select(_mapGraphics);
+            updateRoomSettings(r);
         }
     }
 
     private void gotoRoom(Room r) {
         if (r != null) {
             selectRoom(r);
-            _eleMap.setLevel(_currentRoom.getLevel());
+            _eleMap.setLevel(roomHelper.getRoom().getLevel());
             statusBarLevel.setText(_levelText + _eleMap.getLevel());
             pnlMap.repaint();
         }
     }
 
-    private void saveCurrentRoomSettings() {
+    private void saveCurrentRoomSettings(Room room) {
         int[] tmp;
 
-        _currentRoom.setCodeDescription(txtRoomCodeDesc.getText().trim());
-        _currentRoom.setShortDescription(txtRoomShortDesc.getText().trim());
-        _currentRoom.setLongDescription(txtRoomLongDesc.getText().trim());
-        _currentRoom.setRoomName(txtRoomName.getText().trim());
-        _currentRoom.setLight(sldrLightLevel.getValue());
-        saveSenses(currentSense());
-        btnItemAdd.doClick();
-        btnObjectAdd.doClick();
-        btnFunctionAdd.doClick();
-        _currentRoom.setBoundary(txtBoundary.getText().trim());
-        _currentRoom.setExtraCode(txtRoomCode.getText().trim());
+        if (room != null) {
+            room.setCodeDescription(txtRoomCodeDesc.getText().trim());
+            room.setShortDescription(txtRoomShortDesc.getText().trim());
+            room.setLongDescription(txtRoomLongDesc.getText().trim());
+            room.setRoomName(txtRoomName.getText().trim());
+            room.setLight(sldrLightLevel.getValue());
+            saveSenses(findSense(room));
+            btnItemAdd.doClick();
+            btnObjectAdd.doClick();
+            btnFunctionAdd.doClick();
+            room.setBoundary(txtBoundary.getText().trim());
+            room.setExtraCode(txtRoomCode.getText().trim());
 
-        _currentRoom.resetTerrains();
-        tmp = lstTerrains.getSelectedIndices();
-        for (int i = 0; i < tmp.length && i < Room.MAX_TERRAINS; i++) {
-            _currentRoom.setTerrain(i, tmp[i]);
+            room.resetTerrains();
+            tmp = lstTerrains.getSelectedIndices();
+            for (int i = 0; i < tmp.length && i < Room.MAX_TERRAINS; i++) {
+                room.setTerrain(i, tmp[i]);
+            }
+            clearRoomSettings();
         }
-        clearRoomSettings();
     }
 
     private void clearRoomSettings() {
@@ -3195,43 +3118,45 @@ public class EleFrame extends JFrame {
         _senseSelected = null;
     }
 
-    private void updateRoomSettings() {
-        lblRoomNumber.setText("" + _currentRoom.getRoomNumber());
-        txtRoomCodeDesc.setText(_currentRoom.getCodeDescription());
-        txtRoomShortDesc.setText(_currentRoom.getShortDescription());
-        txtRoomLongDesc.setText(_currentRoom.getLongDescription());
-        txtRoomName.setText(_currentRoom.getRoomName());
-        updateItemList();
-        sldrLightLevel.setValue(_currentRoom.getLight());
-        if (_currentRoom.isIndoors()) {
-            optIndoors.doClick();
-        } else {
-            optOutdoors.doClick();
-        }
-        txtBoundary.setText(_currentRoom.getBoundary());
-        txtRoomCode.setText(_currentRoom.getExtraCode());
-        lstTerrains.setSelectedIndices(_currentRoom.getTerrains());
-        loadSenses(currentSense());
-        optObjectTypeMon.setSelected(true);
-        optObjectLoadTrack.setSelected(true);
-        updateObjectLists();
-        updateFunctionLists();
-        optGuardCheckDefault.setSelected(true);
-        optGuardMessageDefault.setSelected(true);
-        optGuardWizardDefault.setSelected(true);
-        updateDirectionList();
-        btnRoomColour.setBackground(_currentRoom.getColour());
-
-        if (pnlProperties.getComponentCount() == 0) {
-            tabbedPaneRoom.setSize(pnlProperties.getSize());
-            if (_currentTool != TOOL_SELECT) {
-                tabbedPaneRoom.setSelectedIndex(DEFAULT_ROOM_PANE);
+    private void updateRoomSettings(Room room) {
+        if (room != null) {
+            lblRoomNumber.setText("" + room.getRoomNumber());
+            txtRoomCodeDesc.setText(room.getCodeDescription());
+            txtRoomShortDesc.setText(room.getShortDescription());
+            txtRoomLongDesc.setText(room.getLongDescription());
+            txtRoomName.setText(room.getRoomName());
+            updateItemList();
+            sldrLightLevel.setValue(room.getLight());
+            if (room.isIndoors()) {
+                optIndoors.doClick();
+            } else {
+                optOutdoors.doClick();
             }
-            pnlProperties.add(tabbedPaneRoom, BorderLayout.CENTER);
-        }
+            txtBoundary.setText(room.getBoundary());
+            txtRoomCode.setText(room.getExtraCode());
+            lstTerrains.setSelectedIndices(room.getTerrains());
+            loadSenses(findSense(room));
+            optObjectTypeMon.setSelected(true);
+            optObjectLoadTrack.setSelected(true);
+            updateObjectLists();
+            updateFunctionLists();
+            optGuardCheckDefault.setSelected(true);
+            optGuardMessageDefault.setSelected(true);
+            optGuardWizardDefault.setSelected(true);
+            updateDirectionList();
+            btnRoomColour.setBackground(room.getColour());
 
-        if (menuViewProperties.isSelected()) {
-            pnlProperties.paint(pnlProperties.getGraphics());
+            if (pnlProperties.getComponentCount() == 0) {
+                tabbedPaneRoom.setSize(pnlProperties.getSize());
+                if (_currentTool != TOOL_SELECT) {
+                    tabbedPaneRoom.setSelectedIndex(DEFAULT_ROOM_PANE);
+                }
+                pnlProperties.add(tabbedPaneRoom, BorderLayout.CENTER);
+            }
+
+            if (menuViewProperties.isSelected()) {
+                pnlProperties.paint(pnlProperties.getGraphics());
+            }
         }
     }
 
@@ -3242,97 +3167,95 @@ public class EleFrame extends JFrame {
             e = (Exit) _eleMap.getExits().exists(p, _eleMap.getLevel());
         }
 
-        if (_currentExit != null) {
-            if ((e != null) && (_currentExit.equals(e))) {
+        if (exitHelper.hasExit()) {
+            Exit currentExit = exitHelper.getExit();
+            if ((e != null) && (currentExit.equals(e))) {
                 return;
             }
-            saveCurrentExitSettings();
-//            clearExitSettings();
-            _currentExit.deSelect(_mapGraphics, _eleMap.getLevel(),
-                                   _eleMap.getShowUpper(),
-                                   _eleMap.getShowLower());
+            saveCurrentExitSettings(currentExit);
+            exitHelper.deSelect(_mapGraphics, _eleMap.getLevel(), _eleMap.getShowUpper(), _eleMap.getShowLower());
         }
 
         selectExit(e);
     }
 
-    private void selectExit(Exit e) {
-        _currentExit = e;
-        if (_currentExit != null) {
-            _currentExit.select(_mapGraphics);
-            updateExitSettings();
+    private void selectExit(Exit exit) {
+        exitHelper.setExit(exit);
+        if (exitHelper.hasExit()) { // if the exit was not null
+            exit.select(_mapGraphics);
+            updateExitSettings(exit);
         }
     }
 
     private void gotoExit(Exit e) {
         if (e != null) {
             selectExit(e);
-            _eleMap.setLevel(_currentExit.getRoom1().getLevel());
+            _eleMap.setLevel(exitHelper.getExit().getRoom1().getLevel());
             statusBarLevel.setText(_levelText + _eleMap.getLevel());
             pnlMap.repaint();
         }
     }
 
-    private void saveCurrentExitSettings() {
+    private void saveCurrentExitSettings(Exit exit) {
         if (optNotInvis.isSelected()) {
-            _currentExit.setInvisible(EleConstants.EXIT_OPTION_NO);
+            exit.setInvisible(EleConstants.EXIT_OPTION_NO);
         } else {
             if (chkInvisibleRoom1.isSelected()) {
                 if (chkInvisibleRoom2.isSelected()) {
-                    _currentExit.setInvisible(EleConstants.EXIT_OPTION_YES);
+                    exit.setInvisible(EleConstants.EXIT_OPTION_YES);
                 } else {
-                    _currentExit.setInvisible(EleConstants.EXIT_OPTION_ROOM1);
+                    exit.setInvisible(EleConstants.EXIT_OPTION_ROOM1);
                 }
             } else {
-                _currentExit.setInvisible(EleConstants.EXIT_OPTION_ROOM2);
+                exit.setInvisible(EleConstants.EXIT_OPTION_ROOM2);
             }
         }
 
         if (optNotDoor.isSelected()) {
-            _currentExit.setDoor(EleConstants.EXIT_OPTION_NO);
+            exit.setDoor(EleConstants.EXIT_OPTION_NO);
         } else {
-            _currentExit.setDoor(EleConstants.EXIT_OPTION_YES);
-            _currentExit.setDoorName1(txtDoorName1.getText().toLowerCase());
+            exit.setDoor(EleConstants.EXIT_OPTION_YES);
+            exit.setDoorName1(txtDoorName1.getText().toLowerCase());
             if (chkSameDoorName.isSelected()) {
-                _currentExit.setDoorName2(txtDoorName1.getText().toLowerCase());
+                exit.setDoorName2(txtDoorName1.getText().toLowerCase());
             } else {
-                _currentExit.setDoorName2(txtDoorName2.getText().toLowerCase());
+                exit.setDoorName2(txtDoorName2.getText().toLowerCase());
             }
 
-            _currentExit.setDoorDescription1(txtDoorDescRoom1.getText().toLowerCase());
-            _currentExit.setDoorOpenDescription1(txtDoorOpenDescRoom1.getText().toLowerCase());
-            _currentExit.setDoorClosedDescription1(txtDoorClosedDescRoom1.getText().toLowerCase());
+            exit.setDoorDescription1(txtDoorDescRoom1.getText().toLowerCase());
+            exit.setDoorOpenDescription1(txtDoorOpenDescRoom1.getText().toLowerCase());
+            exit.setDoorClosedDescription1(txtDoorClosedDescRoom1.getText().toLowerCase());
             if (chkSameDoorDesc.isSelected()) {
-                _currentExit.setDoorDescription2(txtDoorDescRoom1.getText().toLowerCase());
-                _currentExit.setDoorOpenDescription2(txtDoorOpenDescRoom1.getText().toLowerCase());
-                _currentExit.setDoorClosedDescription2(txtDoorClosedDescRoom1.getText().toLowerCase());
+                exit.setDoorDescription2(txtDoorDescRoom1.getText().toLowerCase());
+                exit.setDoorOpenDescription2(txtDoorOpenDescRoom1.getText().toLowerCase());
+                exit.setDoorClosedDescription2(txtDoorClosedDescRoom1.getText().toLowerCase());
             } else {
-                _currentExit.setDoorDescription2(txtDoorDescRoom2.getText().toLowerCase());
-                _currentExit.setDoorOpenDescription2(txtDoorOpenDescRoom2.getText().toLowerCase());
-                _currentExit.setDoorClosedDescription2(txtDoorClosedDescRoom2.getText().toLowerCase());
+                exit.setDoorDescription2(txtDoorDescRoom2.getText().toLowerCase());
+                exit.setDoorOpenDescription2(txtDoorOpenDescRoom2.getText().toLowerCase());
+                exit.setDoorClosedDescription2(txtDoorClosedDescRoom2.getText().toLowerCase());
             }
 
             if (chkConcealedRoom1.isSelected()) {
                 if (chkConcealedRoom2.isSelected()) {
-                    _currentExit.setConcealed(EleConstants.EXIT_OPTION_YES);
+                    exit.setConcealed(EleConstants.EXIT_OPTION_YES);
                 } else {
-                    _currentExit.setConcealed(EleConstants.EXIT_OPTION_ROOM1);
+                    exit.setConcealed(EleConstants.EXIT_OPTION_ROOM1);
                 }
             } else {
                 if (chkConcealedRoom2.isSelected()) {
-                    _currentExit.setConcealed(EleConstants.EXIT_OPTION_ROOM2);
+                    exit.setConcealed(EleConstants.EXIT_OPTION_ROOM2);
                 }
             }
 
             if (optNotLockable.isSelected()) {
-                _currentExit.setLockable(false);
+                exit.setLockable(false);
             } else {
-                _currentExit.setLockable(true);
-                _currentExit.setKeyFromRoom1(txtKeyId1.getText());
+                exit.setLockable(true);
+                exit.setKeyFromRoom1(txtKeyId1.getText());
                 if (chkSameKeys.isSelected()) {
-                    _currentExit.setKeyFromRoom2(txtKeyId1.getText());
+                    exit.setKeyFromRoom2(txtKeyId1.getText());
                 } else {
-                    _currentExit.setKeyFromRoom2(txtKeyId2.getText());
+                    exit.setKeyFromRoom2(txtKeyId2.getText());
                 }
             }
         }
@@ -3354,30 +3277,30 @@ public class EleFrame extends JFrame {
         }
     }
 
-    private void updateExitSettings() {
+    private void updateExitSettings(Exit exit) {
         boolean door = true;
-        Room room1 = _currentExit.getRoom1();
-        Room room2 = _currentExit.getRoom2();
+        Room room1 = exit.getRoom1();
+        Room room2 = exit.getRoom2();
         String room1Number = String.valueOf(room1.getRoomNumber());
         String room2Number = String.valueOf(room2.getRoomNumber());
-        long exitLevel = _currentExit.getExitLevel();
+        long exitLevel = exit.getExitLevel();
 
 //        lblExitNumber.setText(String.valueOf(_currentExit.getExitNumber()));
         lblExitRoom1.setText(room1Number);
         lblExitRoom2.setText(room2Number);
 
-        if (_currentExit.isVerticalExit()) {
+        if (exit.isVerticalExit()) {
             for (int i = 0; i < 10; i++) {
                 lblExitDirection[i].setText("");
             }
             lblExitDirection[EleUtils.translateDirectionToIndex(EleConstants.DIRECTION_NORTH)].setText((exitLevel==room1.getLevel()?room1Number:room2Number) + " (up)");
             lblExitDirection[EleUtils.translateDirectionToIndex(EleConstants.DIRECTION_SOUTH)].setText((exitLevel!=room1.getLevel()?room1Number:room2Number) + " (down)");
         } else {
-            lblExitDirection[EleUtils.translateDirectionToIndex(EleUtils.getOppositeDirection(_currentExit.getDirection(room1)))].setText(room1Number);
-            lblExitDirection[EleUtils.translateDirectionToIndex(EleUtils.getOppositeDirection(_currentExit.getDirection(room2)))].setText(room2Number);
+            lblExitDirection[EleUtils.translateDirectionToIndex(EleUtils.getOppositeDirection(exit.getDirection(room1)))].setText(room1Number);
+            lblExitDirection[EleUtils.translateDirectionToIndex(EleUtils.getOppositeDirection(exit.getDirection(room2)))].setText(room2Number);
         }
 
-        switch (_currentExit.getInvisible()) {
+        switch (exit.getInvisible()) {
             case EleConstants.EXIT_OPTION_NO:
                 optNotInvis.doClick();
                 break;
@@ -3394,7 +3317,7 @@ public class EleFrame extends JFrame {
                 break;
         }
 
-        switch (_currentExit.getDoor()) {
+        switch (exit.getDoor()) {
             case EleConstants.EXIT_OPTION_NO:
                 door = false;
                 optNotLockable.doClick();
@@ -3406,23 +3329,23 @@ public class EleFrame extends JFrame {
         }
 
         if (door) {
-            txtDoorName1.setText(_currentExit.getDoorName1());
-            if (!_currentExit.isDoorSame()) {
+            txtDoorName1.setText(exit.getDoorName1());
+            if (!exit.isDoorSame()) {
                 chkSameDoorName.doClick();
-                txtDoorName2.setText(_currentExit.getDoorName2());
+                txtDoorName2.setText(exit.getDoorName2());
             }
 
-            txtDoorDescRoom1.setText(_currentExit.getDoorDescription1());
-            txtDoorOpenDescRoom1.setText(_currentExit.getDoorOpenDescription1());
-            txtDoorClosedDescRoom1.setText(_currentExit.getDoorClosedDescription1());
-            if (!_currentExit.isDoorDescriptionSame()) {
+            txtDoorDescRoom1.setText(exit.getDoorDescription1());
+            txtDoorOpenDescRoom1.setText(exit.getDoorOpenDescription1());
+            txtDoorClosedDescRoom1.setText(exit.getDoorClosedDescription1());
+            if (!exit.isDoorDescriptionSame()) {
                 chkSameDoorDesc.doClick();
-                txtDoorDescRoom2.setText(_currentExit.getDoorDescription2());
-                txtDoorOpenDescRoom2.setText(_currentExit.getDoorOpenDescription2());
-                txtDoorClosedDescRoom2.setText(_currentExit.getDoorClosedDescription2());
+                txtDoorDescRoom2.setText(exit.getDoorDescription2());
+                txtDoorOpenDescRoom2.setText(exit.getDoorOpenDescription2());
+                txtDoorClosedDescRoom2.setText(exit.getDoorClosedDescription2());
             }
 
-            switch (_currentExit.getConcealed()) {
+            switch (exit.getConcealed()) {
                 case EleConstants.EXIT_OPTION_YES:
                     chkConcealedRoom1.doClick();
                     chkConcealedRoom2.doClick();
@@ -3435,12 +3358,12 @@ public class EleFrame extends JFrame {
                     break;
             }
 
-            if (_currentExit.isLockable()) {
+            if (exit.isLockable()) {
                 optLockable.doClick();
-                txtKeyId1.setText(_currentExit.getKeyFromRoom1());
-                if (!_currentExit.isKeySame()) {
+                txtKeyId1.setText(exit.getKeyFromRoom1());
+                if (!exit.isKeySame()) {
                     chkSameKeys.doClick();
-                    txtKeyId2.setText(_currentExit.getKeyFromRoom2());
+                    txtKeyId2.setText(exit.getKeyFromRoom2());
                 }
             } else {
                 optNotLockable.doClick();
@@ -3465,9 +3388,10 @@ public class EleFrame extends JFrame {
 
         // Change tool to selecting.
         button_actionPerformed(btnSelect, TOOL_SELECT);
-        if (_currentRoom != null) {
-            level = _currentRoom.getLevel();
-            r = (Room) _eleMap.getRooms().exists(_currentRoom.getLocation(),
+        if (roomHelper.hasRoom()) {
+            Room currentRoom = roomHelper.getRoom();
+            level = currentRoom.getLevel();
+            r = (Room) _eleMap.getRooms().exists(currentRoom.getLocation(),
                                                   (up?level+1:level-1));
             if (r == null) {
                 JOptionPane.showMessageDialog(this,
@@ -3477,52 +3401,54 @@ public class EleFrame extends JFrame {
                         (up?"an up":"a down")+" exit.",
                         "Exit Warning",
                         JOptionPane.WARNING_MESSAGE);
-            } else if (!_currentRoom.containsExit(direction)) {
-                saveCurrentRoomSettings();
-//                clearRoomSettings();
-                _currentRoom.deSelect(_mapGraphics, _eleMap.getLevel(),
-                                       _eleMap.getShowUpper(), _eleMap.getShowLower());
-                _currentExit = new Exit(r, _currentRoom, _eleMap.getExitNumber(),
-                                         (up?level+1:level), _mapGraphics);
-                _eleMap.getExits().add(_currentExit);
+            } else if (!currentRoom.containsExit(direction)) {
+                saveCurrentRoomSettings(currentRoom);
+                roomHelper.deSelect(_mapGraphics, _eleMap.getLevel(),  _eleMap.getShowUpper(), _eleMap.getShowLower());
+                exitHelper.setExit(new Exit(r, currentRoom, _eleMap.getExitNumber(), (up?level+1:level), _mapGraphics));
+                _eleMap.getExits().add(exitHelper.getExit());
                 _eleMap.incrementExitNumber();
-                updateExitSettings();
-
-                _currentRoom = null;
+                updateExitSettings(exitHelper.getExit());
             }
         }
     }
 
     private void selectVerticalExit(int direction) {
-        _currentExit = _currentRoom.getExit(direction);
+        exitHelper.setExit(roomHelper.getRoom().getExit(direction));
         updateCurrentRoom(null, false);
         clearExitSettings();
-        if (_currentExit != null) {
-            _currentExit.select(_mapGraphics);
-            updateExitSettings();
+        if (exitHelper.hasExit()) {
+            exitHelper.getExit().select(_mapGraphics);
+            updateExitSettings(exitHelper.getExit());
         }
     }
 
     private void deleteVerticalExit(int direction) {
-        _currentExit = _currentRoom.getExit(direction);
+        exitHelper.setExit(roomHelper.getRoom().getExit(direction));
         updateCurrentRoom(null, false);
-        if (_currentExit != null) {
-            _eleMap.getExits().remove(_currentExit);
-            _currentExit.dispose();
-            _currentExit = null;
+        if (exitHelper.hasExit()) {
+            _eleMap.getExits().remove(exitHelper.getExit());
+            exitHelper.clearExit();
         }
     }
 
+    private EleHashtable findSense() {
+        return roomHelper.currentSense(optSmells.isSelected(), optSounds.isSelected());
+    }
+
+    private EleHashtable findSense(Room room) {
+        return RoomHelper.currentSense(optSmells.isSelected(), optSounds.isSelected(), room);
+    }
+
     private void updateItemList() {
-        lstItems.setListData(_currentRoom.getItems().toArray());
+        lstItems.setListData(roomHelper.getRoom().getItems().toArray());
     }
 
     private void updateDirectionList() {
-        lstGuardDirections.setListData(_currentRoom.getExitDirections());
+        lstGuardDirections.setListData(roomHelper.getRoom().getExitDirections());
     }
 
     private void updateObjectLists() {
-        ArrayList loadedObjects = _currentRoom.getLoadedObjects();
+        ArrayList loadedObjects = roomHelper.getRoom().getLoadedObjects();
 
         lstObjects.setListData(loadedObjects.toArray());
         // todo JPC This needs to seperate out the guards from non-guards
@@ -3530,7 +3456,7 @@ public class EleFrame extends JFrame {
     }
 
     private void updateFunctionLists() {
-        ArrayList functions = _currentRoom.getFunctions();
+        ArrayList functions = roomHelper.getRoom().getFunctions();
         Iterator iter;
         Object key;
 
@@ -3556,19 +3482,6 @@ public class EleFrame extends JFrame {
             v = new Vector<String>(senses.keySet());
         }
         lstSenses.setListData(v);
-    }
-
-    private EleHashtable currentSense() {
-        EleHashtable senses = null;
-
-        if (_currentRoom != null) {
-            if (optSmells.isSelected()) {
-                senses = _currentRoom.getSmells();
-            } else if (optSounds.isSelected()) {
-                senses = _currentRoom.getSounds();
-            }
-        }
-        return senses;
     }
 
     private void saveSenses(EleHashtable senses) {

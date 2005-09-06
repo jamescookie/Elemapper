@@ -400,14 +400,14 @@ public class Room extends Rectangle implements EleMappable {
         paint(g);
     }
 
-    public void deSelect(Graphics g, long l, boolean showUpper, boolean showLower) {
+    public void deSelect(Graphics g, long level, boolean showUpper, boolean showLower) {
         _selected = false;
-        if (_level == l) {
-            paint(g, l);
-        } else if ((_level == l + 1) && showUpper) {
-            paintUpperLevel(g, l);
-        } else if ((_level == l - 1) && showLower) {
-            paintLowerLevel(g, l);
+        if (_level == level) {
+            paint(g, level);
+        } else if ((_level == level + 1) && showUpper) {
+            paintUpperLevel(g, level);
+        } else if ((_level == level - 1) && showLower) {
+            paintLowerLevel(g, level);
         }
     }
 
