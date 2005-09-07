@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--JBuilder XML Project-->
 <project>
+  <property category="debug.0" name="SmartStepRedefineClasses" value="0"/>
+  <property category="debug.0" name="SmartStepSkipStaticInitializers" value="0"/>
+  <property category="debug.0" name="SmartStepSkipSynthetics" value="0"/>
   <property category="generalFormatting" name="blockIndent" value="4"/>
+  <property category="generalFormatting2" name="blockIndent" value="4"/>
+  <property category="generalFormatting2" name="overrideBasicFormatting" value="1"/>
   <property category="idl" name="ProcessIDL" value="false"/>
   <property category="javaFormatting" name="alignMultilineAssign" value="1"/>
   <property category="javaFormatting" name="arrayInitDataOnNewLine" value="0"/>
@@ -10,6 +15,7 @@
   <property category="javaFormatting" name="extendsOnNewLine" value="0"/>
   <property category="javaFormatting" name="finallyOnNewLine" value="0"/>
   <property category="javaFormatting" name="implementsOnNewLine" value="0"/>
+  <property category="javaFormatting" name="packagePrefixGroups" value="java;javax;BLANK_LINE;java.awt;javax.swing;BLANK_LINE;org;(*)"/>
   <property category="javaFormatting" name="packageThreshold" value="8"/>
   <property category="javaFormatting" name="spaceBeforeLparen" value="0"/>
   <property category="javaFormatting" name="whileOnNewLine" value="0"/>
@@ -55,10 +61,12 @@
   <property category="sys" name="IncludeTestPath" value="1"/>
   <property category="sys" name="InstanceVisibility" value="0"/>
   <property category="sys" name="JDK" value="java version 1.5.0-b64"/>
+  <property category="sys" name="JvmVersion" value="1.5"/>
   <property category="sys" name="LastTag" value="0"/>
-  <property category="sys" name="Libraries" value="JBCL;Swing;JDOM-B10;JDOMXerces"/>
+  <property category="sys" name="Libraries" value="JDOM 1.0;JBCL"/>
   <property category="sys" name="OutPath" value="classes"/>
   <property category="sys" name="SourcePath" value="src;test"/>
+  <property category="sys" name="SourceVersion" value="1.5"/>
   <property category="sys" name="TestPath" value="test"/>
   <property category="sys" name="Title" value=""/>
   <property category="sys" name="TitleLabel" value="Title:"/>
