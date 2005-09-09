@@ -162,12 +162,12 @@ public class RoomHelper {
         }
     }
 
-    public void removeObject(String objectName) {
-        currentRoom.getLoadedObjects().remove(objectName);
+    public void removeObject(LoadedObject object) {
+        currentRoom.getLoadedObjects().remove(object);
     }
 
-    public void removeFunction(String functionName) {
-        currentRoom.getFunctions().remove(functionName);
+    public void removeFunction(Function function) {
+        currentRoom.getFunctions().remove(function);
     }
 
     public void setColour(Color c) {
