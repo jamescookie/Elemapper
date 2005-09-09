@@ -278,10 +278,9 @@ public class ExitTabs extends JTabbedPane {
         pnlExitSpecifics.setLayout(borderLayout10);
         pnlExitSpecifics.add(pnlExitSpecificsLayout1, BorderLayout.WEST);
         pnlExitSpecifics.add(pnlExitSpecificsLayout2, BorderLayout.CENTER);
-        // Add To Tab
-        this.setBorder(borderInset5);
-        this.add(pnlExitSpecifics, "Specifics");
-
+        // Add To this
+        setBorder(borderInset5);
+        add(pnlExitSpecifics, "Specifics");
     }
 
     //-------------------------------------------------
@@ -606,8 +605,8 @@ public class ExitTabs extends JTabbedPane {
         }
 
         if (pnlProperties.getComponentCount() == 0) {
-            this.setSize(pnlProperties.getSize());
-            this.setSelectedIndex(DEFAULT_EXIT_PANE);
+            setSize(pnlProperties.getSize());
+            setSelectedIndex(DEFAULT_EXIT_PANE);
             pnlProperties.add(this, BorderLayout.CENTER);
         }
 
