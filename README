@@ -1,1 +1,66 @@
-Elemapper
+Elemapper Updates
+
+===================================================================
+Version 1.7
+===================================================================
+
+Added guards.
+Had to include all of xerces.jar as the dependancies were not correctly identified.
+Re-included the DTD so old files are still loadable - This will be removed at some point.
+Updated to Java 1.5.
+Updated to JDom 1.0.
+
+===================================================================
+Version 1.6
+===================================================================
+
+Update the exit's tab with more information (eg concealed).
+Updated the code generated to use DOOR_CHANGE rather than a seperate look function.
+Changed the update method as the powerupdate license had expired.
+Changed Vectors to ArrayLists for speed.
+Added support for functions - This will enable guards to be added.
+Removed dependancy on DTD - It was getting hard to make it backwards compatiable.
+Updated to Java 1.4.
+
+===================================================================
+Version 1.5
+===================================================================
+
+Updated to JDom beta 10.
+
+===================================================================
+Version 1.4
+===================================================================
+
+Set the focus on room/exit if there was error with it when exporting (suggestion from Midnight).
+Fixed the annoying pop-up menu when pasting over rooms.
+Stopped the current room tab from changing when selecting another room.
+Added a code section for entering your own code in rooms.
+Removed empty functions tab (more to come on this).
+Fix a bug from Torallion where the default sounds/smells were polluting other rooms.
+
+===================================================================
+Version 1.3
+===================================================================
+
+Updated so that a empty long description can still be uploaded and work.
+You can now overwrite a room when copy and pasting which allows you to create room templates.
+
+===================================================================
+Version 1.2
+===================================================================
+
+Included some needed files for handling XML.
+
+===================================================================
+Version 1.1
+===================================================================
+
+Updated to use new door system.
+
+===================================================================
+Version 1.0
+===================================================================
+
+First non-beta version. Includes copy and paste and colour settings.
+
