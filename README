@@ -1,6 +1,14 @@
 Elemapper Updates
 
 ===================================================================
+Version 1.8 - Nov 2011
+===================================================================
+
+Dusted off after such a long time!
+Fixed exits not deleting (why did I never spot this before?)
+Made Intellij generate the jar file
+
+===================================================================
 Version 1.7
 ===================================================================
 

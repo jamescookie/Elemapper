@@ -21,7 +21,7 @@ public final class EleConstants {
     /** Can't construct this class */
     private EleConstants() {}
 
-    public static final String VERSION              = "1.7";
+    public static final String VERSION              = "1.8";
 
     public static final int DIRECTION_UP            = Room.OUT_UP;
     public static final int DIRECTION_NORTH         = Room.OUT_TOP;

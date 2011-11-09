@@ -45,7 +45,7 @@ public class AboutBox extends JDialog implements ActionListener {
     private FlowLayout flowLayout1 = new FlowLayout();
     private String product = "EleMapper";
     private String version = EleConstants.VERSION;
-    private String copyright = "Copyright (c) 2001-2004";
+    private String copyright = "Copyright (c) 2001-2011";
     private String author = "Havoc (aka James Cook)";
     private String comments = "This product was designed to enable the immortals " +
                               "on Elephant Mud to quickly generate areas without " +
