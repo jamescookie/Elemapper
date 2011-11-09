@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import com.borland.jbcl.layout.VerticalFlowLayout;
 import org.elephant.mapper.EleConstants;
 import org.elephant.mapper.EleUtils;
+import org.elephant.mapper.resources.ResourceLoader;
 
 /**
  * A dialog box to explain EleMapper.
@@ -68,7 +69,7 @@ public class AboutBox extends JDialog implements ActionListener {
     private void jbInit() throws Exception {
         String[] tmp;
         JLabel[] labels;
-        imageLabel.setIcon(new ImageIcon(AboutBox.class.getResource(eleImage)));
+        imageLabel.setIcon(new ImageIcon(ResourceLoader.load(eleImage)));
         setTitle("About");
         setResizable(false);
         panel1.setLayout(borderLayout1);

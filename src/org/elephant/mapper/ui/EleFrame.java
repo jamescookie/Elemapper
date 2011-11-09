@@ -1,13 +1,6 @@
 package org.elephant.mapper.ui;
 
-import java.awt.AWTEvent;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -25,18 +18,10 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.*;
 
-import org.elephant.mapper.DocumentHandler;
-import org.elephant.mapper.EleConstants;
-import org.elephant.mapper.EleMap;
-import org.elephant.mapper.EleMapExportException;
-import org.elephant.mapper.EleMappable;
-import org.elephant.mapper.EleMappableCollection;
-import org.elephant.mapper.EleUtils;
-import org.elephant.mapper.Exit;
-import org.elephant.mapper.FileChooser;
-import org.elephant.mapper.Room;
+import org.elephant.mapper.*;
 import org.elephant.mapper.helper.ExitHelper;
 import org.elephant.mapper.helper.RoomHelper;
+import org.elephant.mapper.resources.ResourceLoader;
 
 /**
  * The graphical part of the Mapper, this class also contains a lot
@@ -60,9 +45,8 @@ public class EleFrame extends JFrame {
     static final int TOOL_ADD_EXIT = 4;
     private static final int NUMBER_OF_ROOMS_ON_MAP = 300;
     private static final int ZOOM_LEVEL = 2;
-    private static final String RESOURCES = "resources/";
     private static final String MAPS = "maps/";
-    private static final String IMAGES = RESOURCES + "images/";
+    private static final String IMAGES = "images/";
 
     private String _eleImage = IMAGES + "Ele.gif";
     private String _levelText = "Level ";
@@ -204,15 +188,15 @@ public class EleFrame extends JFrame {
     /** component initialization. */
     private void jbInit() throws Exception  {
         // Setup variables
-//        _image1 = new ImageIcon(getClass().getResource(IMAGES + "Select.gif"));
-//        _image2 = new ImageIcon(getClass().getResource(IMAGES + "AddRoom.gif"));
-//        _image3 = new ImageIcon(getClass().getResource(IMAGES + "AddExit.gif"));
-//        _image4 = new ImageIcon(getClass().getResource(IMAGES + "Delete.gif"));
-//        _image5 = new ImageIcon(getClass().getResource(IMAGES + "ZoomIn.gif"));
-//        _image6 = new ImageIcon(getClass().getResource(IMAGES + "ZoomOut.gif"));
-//        _image7 = new ImageIcon(getClass().getResource(IMAGES + "Up.gif"));
-//        _image8 = new ImageIcon(getClass().getResource(IMAGES + "Down.gif"));
-//        _image9 = new ImageIcon(getClass().getResource(IMAGES + "Help.gif"));
+        _image1 = new ImageIcon(ResourceLoader.load(IMAGES + "Select.gif"));
+        _image2 = new ImageIcon(ResourceLoader.load(IMAGES + "AddRoom.gif"));
+        _image3 = new ImageIcon(ResourceLoader.load(IMAGES + "AddExit.gif"));
+        _image4 = new ImageIcon(ResourceLoader.load(IMAGES + "Delete.gif"));
+        _image5 = new ImageIcon(ResourceLoader.load(IMAGES + "ZoomIn.gif"));
+        _image6 = new ImageIcon(ResourceLoader.load(IMAGES + "ZoomOut.gif"));
+        _image7 = new ImageIcon(ResourceLoader.load(IMAGES + "Up.gif"));
+        _image8 = new ImageIcon(ResourceLoader.load(IMAGES + "Down.gif"));
+        _image9 = new ImageIcon(ResourceLoader.load(IMAGES + "Help.gif"));
         _currentDir = new File(MAPS);
         _borderButtonNormal = BorderFactory.createEmptyBorder();
         _borderButtonRaised = BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.lightGray,Color.white,Color.gray,Color.lightGray);
@@ -221,7 +205,7 @@ public class EleFrame extends JFrame {
         Dimension buttonSize = new Dimension(22, 22);
 
         // Set properties on this.
-//        setIconImage(Toolkit.getDefaultToolkit().createImage(EleFrame.class.getResource(_eleImage))); //todo Comment out for designer
+        setIconImage(Toolkit.getDefaultToolkit().createImage(ResourceLoader.load(_eleImage))); //todo Comment out for designer
         setSize(new Dimension(586, 618));
         updateTitle();
 
