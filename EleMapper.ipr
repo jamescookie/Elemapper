@@ -11,15 +11,15 @@
           <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
         </element>
         <element id="module-output" name="EleMapper" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/xerces.jar" path-in-jar="/" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/ant.jar" path-in-jar="/" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/xml-apis.jar" path-in-jar="/" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/jbcl.jar" path-in-jar="/" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/jaxen-jdom.jar" path-in-jar="/" />
         <element id="extracted-dir" path="$PROJECT_DIR$/lib/saxpath.jar" path-in-jar="/" />
-        <element id="extracted-dir" path="$PROJECT_DIR$/lib/jaxen-core.jar" path-in-jar="/" />
         <element id="extracted-dir" path="$PROJECT_DIR$/lib/xalan.jar" path-in-jar="/" />
         <element id="extracted-dir" path="$PROJECT_DIR$/lib/jdom.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/xml-apis.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/jaxen-jdom.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/jaxen-core.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/xerces.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/jbcl.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/ant.jar" path-in-jar="/" />
       </root>
     </artifact>
   </component>

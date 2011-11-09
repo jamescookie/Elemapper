@@ -1346,6 +1346,7 @@ public class EleFrame extends JFrame {
                     } else if (exitHelper.hasExit()) {
                         clearExitSettings();
                         _eleMap.getExits().remove(exitHelper.getExit());
+                        exitHelper.getExit().dispose();
                         exitHelper.clearExit();
                     }
                     button_actionPerformed(btnSelect, TOOL_SELECT);
