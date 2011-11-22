@@ -1,0 +1,25 @@
+http://calebevans.me/projects/jcanvas/index.php
+
+$("canvas").css('background-color', '#ffc').translateCanvas({
+  x: $("canvas").width()/2, y: $("canvas").height()/2
+}).drawRect({
+  strokeStyle: '#0f0',
+  strokeWidth: 1,
+  fillStyle: "#ccc",
+  x: 0, y: 0,
+  width: 20, height: 20,
+  fromCenter: false
+}).drawRect({
+  shadowColor: "#000",
+  shadowBlur: 1,
+  shadowX: 1, shadowY: 1,
+  fillStyle: "#ccc",
+  x: 50, y: 50,
+  width: 20, height: 20,
+  fromCenter: false
+}).drawLine({
+  strokeStyle: "#000",
+  strokeWidth: 1,
+  x1: 20, y1: 20,
+  x2: 50, y2: 50
+}).click(function(e) { console.log(e.offsetX, e.offsetY); });
