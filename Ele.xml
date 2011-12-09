@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE MAP SYSTEM "file:/D:/Languages/Java/Development/EleMapper/classes/org/elephant/mapper/resources/dtds/Mapper.dtd">
+<!DOCTYPE MAP SYSTEM "file:/C:/Dev/Elemapper/src/org/elephant/mapper/resources/dtds/Mapper.dtd">
 <MAP>
   <ROOMSIZE>5</ROOMSIZE>
   <ROOMNUMBER>730</ROOMNUMBER>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MAP>
+
+<MAP>
+  <ROOMSIZE>20</ROOMSIZE>
+  <ROOMNUMBER>4</ROOMNUMBER>
+  <EXITNUMBER>4</EXITNUMBER>
+  <LEVEL>0</LEVEL>
+  <PATH>/d/town/thing/</PATH>
+  <ROOMS>
+    <ROOM>
+      <ROOMID>1</ROOMID>
+      <X>120</X>
+      <Y>80</Y>
+      <ROOMLEVEL>0</ROOMLEVEL>
+      <ROOMNAME>Arse</ROOMNAME>
+      <CODEDESC />
+      <SHORT>Shortie</SHORT>
+      <LONG>Longie</LONG>
+      <LIGHT>4</LIGHT>
+      <BOUNDARY>East</BOUNDARY>
+      <ROOMCODE><![CDATA[StuffGoesHere() {
+  andThings;
+}]]></ROOMCODE>
+      <TERRAIN>plains</TERRAIN>
+      <SMELLS>
+        <SENSE>
+          <SENSENAME />
+          <SENSEDESCRIPTION>pooh</SENSEDESCRIPTION>
+        </SENSE>
+      </SMELLS>
+      <SOUNDS>
+        <SENSE>
+          <SENSENAME>default</SENSENAME>
+          <SENSEDESCRIPTION>bird chirping</SENSEDESCRIPTION>
+        </SENSE>
+        <SENSE>
+          <SENSENAME>door</SENSENAME>
+          <SENSEDESCRIPTION>knocking</SENSEDESCRIPTION>
+        </SENSE>
+      </SOUNDS>
+      <LOADED>
+        <LOADOBJ>
+          <LOADOBJMONSTER />
+          <LOADOBJNAME>OrcGauard</LOADOBJNAME>
+          <LOADOBJMESSAGE>In he stomps</LOADOBJMESSAGE>
+          <LOADOBJTRACK />
+        </LOADOBJ>
+        <LOADOBJ>
+          <LOADOBJOBJECT />
+          <LOADOBJNAME>Vase</LOADOBJNAME>
+          <LOADOBJMESSAGE />
+          <LOADOBJPRESENT />
+        </LOADOBJ>
+      </LOADED>
+      <ITEMS>
+        <ITEM>
+          <ITEMNAME>lamp</ITEMNAME>
+          <ITEMNAME>lightsource</ITEMNAME>
+          <ITEMDESCRIPTION>a glowing thing</ITEMDESCRIPTION>
+        </ITEM>
+        <ITEM>
+          <ITEMNAME>grass</ITEMNAME>
+          <ITEMDESCRIPTION>what's that?</ITEMDESCRIPTION>
+        </ITEM>
+      </ITEMS>
+      <FUNCTIONS>
+        <FUNCTION>
+          <FUNCTIONRETURN />
+          <FUNCTIONNAME>guardMotion</FUNCTIONNAME>
+          <FUNCTIONARGS />
+          <FUNCTIONBODY><![CDATA[if(player) {
+  kickarse();
+}]]></FUNCTIONBODY>
+        </FUNCTION>
+      </FUNCTIONS>
+    </ROOM>
+    <ROOM>
+      <ROOMID>2</ROOMID>
+      <X>160</X>
+      <Y>80</Y>
+      <ROOMLEVEL>0</ROOMLEVEL>
+      <ROOMNAME>Stuff</ROOMNAME>
+      <CODEDESC />
+      <SHORT />
+      <LONG />
+      <LIGHT>3</LIGHT>
+      <BOUNDARY />
+      <ROOMCODE />
+      <SMELLS />
+      <SOUNDS />
+      <LOADED />
+      <ITEMS />
+      <FUNCTIONS />
+    </ROOM>
+    <ROOM>
+      <ROOMID>3</ROOMID>
+      <X>160</X>
+      <Y>40</Y>
+      <ROOMLEVEL>0</ROOMLEVEL>
+      <ROOMNAME>Things</ROOMNAME>
+      <CODEDESC />
+      <SHORT />
+      <LONG />
+      <LIGHT>3</LIGHT>
+      <BOUNDARY />
+      <ROOMCODE />
+      <SMELLS />
+      <SOUNDS />
+      <LOADED />
+      <ITEMS />
+      <FUNCTIONS />
+    </ROOM>
+  </ROOMS>
+  <EXITS>
+    <EXIT>
+      <EXITID>1</EXITID>
+      <EXITLEVEL>0</EXITLEVEL>
+      <ROOM1>3</ROOM1>
+      <ROOM2>1</ROOM2>
+      <INVIS>0</INVIS>
+      <DOORDATA>
+        <DOOR>0</DOOR>
+        <DOORNAME1 />
+        <DOORNAME2 />
+        <DOORDESC1 />
+        <DOORDESC2 />
+        <DOOROPENDESC1 />
+        <DOOROPENDESC2 />
+        <DOORCLOSEDDESC1 />
+        <DOORCLOSEDDESC2 />
+        <CONCEALED>0</CONCEALED>
+        <LOCKABLE>false</LOCKABLE>
+        <DOORKEY />
+        <DOORKEY2 />
+      </DOORDATA>
+    </EXIT>
+    <EXIT>
+      <EXITID>2</EXITID>
+      <EXITLEVEL>0</EXITLEVEL>
+      <ROOM1>1</ROOM1>
+      <ROOM2>2</ROOM2>
+      <INVIS>0</INVIS>
+      <DOORDATA>
+        <DOOR>0</DOOR>
+        <DOORNAME1 />
+        <DOORNAME2 />
+        <DOORDESC1 />
+        <DOORDESC2 />
+        <DOOROPENDESC1 />
+        <DOOROPENDESC2 />
+        <DOORCLOSEDDESC1 />
+        <DOORCLOSEDDESC2 />
+        <CONCEALED>0</CONCEALED>
+        <LOCKABLE>false</LOCKABLE>
+        <DOORKEY />
+        <DOORKEY2 />
+      </DOORDATA>
+    </EXIT>
+    <EXIT>
+      <EXITID>3</EXITID>
+      <EXITLEVEL>0</EXITLEVEL>
+      <ROOM1>2</ROOM1>
+      <ROOM2>3</ROOM2>
+      <INVIS>0</INVIS>
+      <DOORDATA>
+        <DOOR>0</DOOR>
+        <DOORNAME1 />
+        <DOORNAME2 />
+        <DOORDESC1 />
+        <DOORDESC2 />
+        <DOOROPENDESC1 />
+        <DOOROPENDESC2 />
+        <DOORCLOSEDDESC1 />
+        <DOORCLOSEDDESC2 />
+        <CONCEALED>0</CONCEALED>
+        <LOCKABLE>false</LOCKABLE>
+        <DOORKEY />
+        <DOORKEY2 />
+      </DOORDATA>
+    </EXIT>
+  </EXITS>
+</MAP>
+
